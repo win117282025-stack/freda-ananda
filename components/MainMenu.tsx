@@ -27,7 +27,7 @@ export const MainMenu: React.FC = () => {
 
   const handleLogin = () => {
     if (loginUser === 'Freda' && loginPass === 'freda117282026') {
-      setUsername('Freda (Owner)');
+      setUsername('Freda (Pemilik)');
       setRole('OWNER');
       setMenuStep('ROOM_SELECT');
     } else if (loginUser && loginPass === 'admin123') {
@@ -35,7 +35,7 @@ export const MainMenu: React.FC = () => {
       setRole('ADMIN');
       setMenuStep('ROOM_SELECT');
     } else {
-      alert('Username atau Password salah! (Hint: Freda/freda117282026 atau Any/admin123)');
+      alert('Username atau Password salah! (Petunjuk: Freda/freda117282026 atau ApaSaja/admin123)');
     }
   };
 
@@ -54,12 +54,9 @@ export const MainMenu: React.FC = () => {
   };
 
   const handleJoin = () => {
-    if (inputRoom.length !== 5) return alert('Kode room harus 5 karakter!');
+    if (inputRoom.length !== 5) return alert('Kode ruangan harus 5 karakter!');
     setIsHost(false);
     setRoomId(inputRoom.toUpperCase());
-    // In a real app, we would query the host for the mode. 
-    // For now, we assume OBBY or let user pick, but let's default to OBBY and rely on syncing if implemented.
-    // Ideally, the JOIN packet response should set this.
     setPhase(GamePhase.PLAYING);
   };
 
@@ -71,7 +68,7 @@ export const MainMenu: React.FC = () => {
           <h1 className="text-4xl font-black text-gray-800 tracking-tighter mb-2">
             OBBY NUSANTARA <span className="text-roblox-blue">3D</span>
           </h1>
-          <p className="text-gray-500 font-medium">Multiplayer Obby & Tools</p>
+          <p className="text-gray-500 font-medium">Multiplayer Obby & Peralatan</p>
         </div>
 
         {/* STEP 1: AUTHENTICATION */}
@@ -82,13 +79,13 @@ export const MainMenu: React.FC = () => {
                 onClick={() => setAuthMode('GUEST')}
                 className={`flex-1 py-2 rounded-md font-bold text-sm transition ${authMode === 'GUEST' ? 'bg-white shadow text-roblox-blue' : 'text-gray-500'}`}
               >
-                GUEST
+                TAMU
               </button>
               <button 
                 onClick={() => setAuthMode('LOGIN')}
                 className={`flex-1 py-2 rounded-md font-bold text-sm transition ${authMode === 'LOGIN' ? 'bg-white shadow text-roblox-blue' : 'text-gray-500'}`}
               >
-                LOGIN
+                MASUK
               </button>
             </div>
 
@@ -100,15 +97,15 @@ export const MainMenu: React.FC = () => {
                   value={inputName}
                   onChange={(e) => setInputName(e.target.value)}
                   className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-roblox-blue focus:outline-none font-bold text-gray-700 mb-4"
-                  placeholder="Nama Guest..."
+                  placeholder="Nama Tamu..."
                 />
                 <button
                   onClick={handleGuest}
                   className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl shadow-lg transition"
                 >
-                  Masuk sebagai Guest
+                  Masuk sebagai Tamu
                 </button>
-                <p className="text-xs text-gray-400 mt-2 text-center">Guest hanya memiliki pedang.</p>
+                <p className="text-xs text-gray-400 mt-2 text-center">Tamu memiliki akses terbatas.</p>
               </div>
             ) : (
               <div className="animate-fade-in space-y-3">
@@ -136,9 +133,9 @@ export const MainMenu: React.FC = () => {
                   onClick={handleLogin}
                   className="w-full bg-roblox-blue hover:bg-blue-600 text-white font-bold py-3 rounded-xl shadow-lg transition mt-2"
                 >
-                  Login (Owner/Admin)
+                  Masuk (Pemilik/Admin)
                 </button>
-                <p className="text-xs text-gray-400 mt-2 text-center">Owner/Admin punya akses full.</p>
+                <p className="text-xs text-gray-400 mt-2 text-center">Pemilik/Admin punya akses penuh (Terbang/Spawn).</p>
               </div>
             )}
           </div>
@@ -172,7 +169,7 @@ export const MainMenu: React.FC = () => {
                 className="bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg transform hover:scale-105 transition duration-200 flex flex-col items-center"
                 >
                 <i className="fas fa-plus-circle text-2xl mb-2"></i>
-                Buat Room
+                Buat Ruangan
                 </button>
                 <button
                 onClick={() => setMenuStep('JOIN_ROOM')}
@@ -190,7 +187,7 @@ export const MainMenu: React.FC = () => {
         {/* STEP 3: JOIN INPUT */}
         {menuStep === 'JOIN_ROOM' && (
           <div className="animate-fade-in-up">
-            <label className="block text-sm font-bold text-gray-700 mb-1">Kode Room (5 Karakter)</label>
+            <label className="block text-sm font-bold text-gray-700 mb-1">Kode Ruangan (5 Karakter)</label>
             <div className="flex gap-2">
               <input
                 type="text"
@@ -198,13 +195,13 @@ export const MainMenu: React.FC = () => {
                 value={inputRoom}
                 onChange={(e) => setInputRoom(e.target.value.toUpperCase())}
                 className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-roblox-blue focus:outline-none font-mono font-bold text-2xl text-center tracking-widest uppercase"
-                placeholder="CODE"
+                placeholder="ABCDE"
               />
               <button
                 onClick={handleJoin}
                 className="bg-roblox-blue text-white font-bold px-6 rounded-xl shadow-lg hover:bg-blue-600 transition"
               >
-                GO
+                GAS
               </button>
             </div>
             <button
@@ -217,7 +214,7 @@ export const MainMenu: React.FC = () => {
         )}
 
         <div className="mt-8 text-center text-xs text-gray-400 font-semibold">
-          {username !== 'Tamu' ? `Logged in as: ${username}` : 'Not logged in'}
+          {username !== 'Tamu' ? `Masuk sebagai: ${username}` : 'Belum masuk'}
         </div>
       </div>
     </div>

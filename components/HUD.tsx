@@ -120,13 +120,13 @@ export const HUD: React.FC = () => {
         if (cmd === '/speed' && args[1]) {
             const val = parseFloat(args[1]);
             setModifiers(val, useGameStore.getState().jumpMultiplier);
-            addChatMessage({ id: Date.now().toString(), sender: 'System', text: `Speed set to ${val}`, isSystem: true });
+            addChatMessage({ id: Date.now().toString(), sender: 'Sistem', text: `Kecepatan diatur ke ${val}`, isSystem: true });
             return true;
         }
         if (cmd === '/jump' && args[1]) {
             const val = parseFloat(args[1]);
             setModifiers(useGameStore.getState().speedMultiplier, val);
-            addChatMessage({ id: Date.now().toString(), sender: 'System', text: `Jump force set to ${val}`, isSystem: true });
+            addChatMessage({ id: Date.now().toString(), sender: 'Sistem', text: `Lompatan diatur ke ${val}`, isSystem: true });
             return true;
         }
     }
@@ -135,12 +135,12 @@ export const HUD: React.FC = () => {
     if (role === 'OWNER' || role === 'ADMIN') {
         if (cmd === '/fly') {
             toggleFly();
-            addChatMessage({ id: Date.now().toString(), sender: 'System', text: `Fly Mode Toggled`, isSystem: true });
+            addChatMessage({ id: Date.now().toString(), sender: 'Sistem', text: `Mode Terbang Aktif`, isSystem: true });
             return true;
         }
         if (cmd === '/announce') {
             const text = args.slice(1).join(' ');
-            addChatMessage({ id: Date.now().toString(), sender: '[ANNOUNCEMENT]', text: text, isSystem: true });
+            addChatMessage({ id: Date.now().toString(), sender: '[PENGUMUMAN]', text: text, isSystem: true });
             return true;
         }
         if (cmd === '/kick' && args[1]) {
@@ -149,9 +149,9 @@ export const HUD: React.FC = () => {
             const targetId = Object.keys(currentPlayers).find(key => currentPlayers[key].username === targetName);
             if (targetId) {
                 removePlayer(targetId);
-                addChatMessage({ id: Date.now().toString(), sender: 'System', text: `${targetName} has been kicked.`, isSystem: true });
+                addChatMessage({ id: Date.now().toString(), sender: 'Sistem', text: `${targetName} telah dikeluarkan.`, isSystem: true });
             } else {
-                addChatMessage({ id: Date.now().toString(), sender: 'System', text: `Player ${targetName} not found.`, isSystem: true });
+                addChatMessage({ id: Date.now().toString(), sender: 'Sistem', text: `Pemain ${targetName} tidak ditemukan.`, isSystem: true });
             }
             return true;
         }
@@ -239,33 +239,33 @@ export const HUD: React.FC = () => {
                             onClick={() => { setEmote('dance1'); setShowEmoteMenu(false); }} 
                             className="text-left px-3 py-2 text-white hover:bg-white/10 rounded text-sm font-bold flex items-center gap-2 transition"
                         >
-                            <i className="fas fa-music text-blue-400"></i> Dance 1
+                            <i className="fas fa-music text-blue-400"></i> Joget 1
                         </button>
                         <button 
                             onClick={() => { setEmote('dance2'); setShowEmoteMenu(false); }} 
                             className="text-left px-3 py-2 text-white hover:bg-white/10 rounded text-sm font-bold flex items-center gap-2 transition"
                         >
-                            <i className="fas fa-bolt text-yellow-400"></i> Dance 2
+                            <i className="fas fa-bolt text-yellow-400"></i> Joget 2
                         </button>
                         <button 
                             onClick={() => { setEmote('dance3'); setShowEmoteMenu(false); }} 
                             className="text-left px-3 py-2 text-white hover:bg-white/10 rounded text-sm font-bold flex items-center gap-2 transition"
                         >
-                            <i className="fas fa-star text-pink-400"></i> Dance 3
+                            <i className="fas fa-star text-pink-400"></i> Joget 3
                         </button>
                         <div className="h-px bg-white/20 my-1"></div>
                         <button 
                             onClick={() => { setEmote('none'); setShowEmoteMenu(false); }} 
                             className="text-left px-3 py-2 text-red-400 hover:bg-red-500/20 rounded text-sm font-bold flex items-center gap-2 transition"
                         >
-                            <i className="fas fa-stop-circle"></i> Stop
+                            <i className="fas fa-stop-circle"></i> Berhenti
                         </button>
                     </div>
                 )}
             </div>
 
             <div className="bg-black/50 p-2 rounded-lg text-white flex flex-col gap-1 backdrop-blur-sm">
-                <div className="font-bold text-yellow-400 text-sm">ROOM: {roomId}</div>
+                <div className="font-bold text-yellow-400 text-sm">RUANGAN: {roomId}</div>
                 <div className="text-[10px] text-gray-300">
                     Mode: <span className={gameMode === 'RIVALS' ? 'text-red-400 font-bold' : 'text-green-400'}>{gameMode}</span>
                 </div>
@@ -371,9 +371,9 @@ export const HUD: React.FC = () => {
                         value={chatInput}
                         onChange={(e) => setChatInput(e.target.value)}
                         className="flex-1 bg-transparent border border-gray-500 rounded px-2 py-1 text-white text-sm focus:outline-none"
-                        placeholder={isMobile ? "Chat..." : "Chat or /command..."}
+                        placeholder={isMobile ? "Chat..." : "Chat atau /perintah..."}
                     />
-                    {isMobile && <button type="submit" className="text-blue-400 font-bold px-2">Send</button>}
+                    <button type="submit" className="text-blue-400 font-bold px-2">{isMobile ? 'Kirim' : 'Kirim'}</button>
                 </form>
             </div>
         )}
@@ -401,7 +401,7 @@ export const HUD: React.FC = () => {
                         {ammo}
                     </div>
                     <div className="text-xs text-gray-400 font-bold uppercase tracking-wider">
-                        / {maxAmmo} AMMO
+                        / {maxAmmo} PELURU
                     </div>
                 </div>
             </div>
