@@ -1,0 +1,7 @@
+{
+  "name": "HyperGames",
+  "description": "What are you looking at?\n",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
