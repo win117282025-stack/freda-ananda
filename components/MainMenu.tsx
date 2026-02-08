@@ -49,7 +49,14 @@ export const MainMenu: React.FC = () => {
     const code = generateRoomCode();
     setIsHost(true);
     setRoomId(code);
-    setGameMode(selectedMode); // Set the selected mode
+    
+    const currentRole = useGameStore.getState().role;
+    if (currentRole === 'GUEST') {
+        setUsername(`${username} (Owner)`);
+        setRole('OWNER');
+    }
+
+    setGameMode(selectedMode); 
     setPhase(GamePhase.PLAYING);
   };
 
@@ -145,25 +152,39 @@ export const MainMenu: React.FC = () => {
         {menuStep === 'ROOM_SELECT' && (
           <div className="space-y-4 animate-fade-in-up">
             
-            {/* PLACE SELECTOR */}
-            <div className="bg-gray-100 p-2 rounded-xl flex gap-2">
+            <label className="block text-sm font-bold text-gray-700">Pilih Mode Game</label>
+            <div className="grid grid-cols-2 gap-2">
                 <button
                     onClick={() => setSelectedMode('OBBY')}
-                    className={`flex-1 py-3 rounded-lg font-bold text-sm transition flex flex-col items-center gap-1 ${selectedMode === 'OBBY' ? 'bg-white shadow text-green-600' : 'text-gray-400 hover:text-gray-600'}`}
+                    className={`p-3 rounded-lg font-bold text-xs transition flex flex-col items-center gap-1 border-2 ${selectedMode === 'OBBY' ? 'bg-white border-green-500 text-green-600 shadow' : 'bg-gray-100 border-transparent text-gray-400'}`}
                 >
                     <i className="fas fa-cube text-xl"></i>
-                    OBBY INFINITE
+                    OBBY
                 </button>
                 <button
                     onClick={() => setSelectedMode('RIVALS')}
-                    className={`flex-1 py-3 rounded-lg font-bold text-sm transition flex flex-col items-center gap-1 ${selectedMode === 'RIVALS' ? 'bg-white shadow text-red-600' : 'text-gray-400 hover:text-gray-600'}`}
+                    className={`p-3 rounded-lg font-bold text-xs transition flex flex-col items-center gap-1 border-2 ${selectedMode === 'RIVALS' ? 'bg-white border-red-500 text-red-600 shadow' : 'bg-gray-100 border-transparent text-gray-400'}`}
                 >
                     <i className="fas fa-crosshairs text-xl"></i>
-                    MARVEL RIVALS
+                    RIVALS
+                </button>
+                <button
+                    onClick={() => setSelectedMode('RACING')}
+                    className={`p-3 rounded-lg font-bold text-xs transition flex flex-col items-center gap-1 border-2 ${selectedMode === 'RACING' ? 'bg-white border-blue-500 text-blue-600 shadow' : 'bg-gray-100 border-transparent text-gray-400'}`}
+                >
+                    <i className="fas fa-flag-checkered text-xl"></i>
+                    RACING
+                </button>
+                <button
+                    onClick={() => setSelectedMode('BACKROOMS')}
+                    className={`p-3 rounded-lg font-bold text-xs transition flex flex-col items-center gap-1 border-2 ${selectedMode === 'BACKROOMS' ? 'bg-white border-yellow-600 text-yellow-700 shadow' : 'bg-gray-100 border-transparent text-gray-400'}`}
+                >
+                    <i className="fas fa-dungeon text-xl"></i>
+                    BACKROOMS
                 </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4 mt-4">
                 <button
                 onClick={handleCreate}
                 className="bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg transform hover:scale-105 transition duration-200 flex flex-col items-center"

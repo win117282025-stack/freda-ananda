@@ -5,9 +5,12 @@ import { Physics } from '@react-three/rapier';
 import { Player } from './Game/Player';
 import { Level } from './Game/Level';
 import { RivalsLevel } from './Game/RivalsLevel';
+import { RacingLevel } from './Game/RacingLevel';
+import { BackroomsLevel } from './Game/BackroomsLevel';
 import { RemotePlayer } from './Game/RemotePlayer';
+import { WorldObjects } from './Game/WorldObjects';
 import { useGameStore } from '../store/gameStore';
-import { PlayerState } from '../types';
+import * as THREE from 'three';
 
 // Capture Helper Component
 const ScreenshotManager: React.FC = () => {
@@ -29,9 +32,49 @@ const ScreenshotManager: React.FC = () => {
     return null;
 };
 
+// Day/Night Cycle Component
+const DayNightCycle: React.FC = () => {
+    const skyRef = useRef<any>(null);
+    const starRef = useRef<any>(null);
+    const lightRef = useRef<THREE.DirectionalLight>(null);
+    
+    useFrame((state) => {
+        const time = state.clock.getElapsedTime();
+        // Cycle every 120 seconds
+        const cycle = (time % 120) / 120; 
+        const angle = cycle * Math.PI * 2;
+        
+        // Sun moves in arc
+        const sunX = Math.sin(angle) * 100;
+        const sunY = Math.cos(angle) * 100;
+        
+        if (skyRef.current) {
+            skyRef.current.material.uniforms.sunPosition.value.set(sunX, sunY, -100);
+        }
+        
+        if (lightRef.current) {
+            lightRef.current.position.set(sunX, sunY, -100);
+            lightRef.current.intensity = Math.max(0, Math.cos(angle)) * 1.5;
+        }
+
+        if (starRef.current) {
+            // Stars visible when sun is low
+            starRef.current.rotation.y += 0.0005;
+            // Fade logic simplified
+        }
+    });
+
+    return (
+        <>
+            <Sky ref={skyRef} distance={450000} sunPosition={[0, 1, 0]} inclination={0} azimuth={0.25} />
+            <Stars ref={starRef} radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
+            <directionalLight ref={lightRef} castShadow intensity={1} shadow-mapSize={[1024, 1024]} />
+            <ambientLight intensity={0.2} />
+        </>
+    );
+};
+
 export const GameScene: React.FC = () => {
-  // Select only the IDs of the players. 
-  // Use a comma-separated string to allow stable comparison by value
   const playerIdsString = useGameStore(
     state => Object.keys(state.players).sort().join(',')
   );
@@ -41,11 +84,7 @@ export const GameScene: React.FC = () => {
   const localId = useGameStore(state => state.localId);
   const gameMode = useGameStore(state => state.gameMode);
   
-  // Settings
   const graphicsQuality = useGameStore(state => state.graphicsQuality);
-  
-  // Calculate DPR based on quality (1-10)
-  // Map 1 -> 0.4, 5 -> 1.0, 10 -> 1.5 (High quality shouldn't kill mobile)
   const dpr = 0.4 + (graphicsQuality / 10) * 1.1;
 
   return (
@@ -62,19 +101,13 @@ export const GameScene: React.FC = () => {
         <Canvas 
             shadows={graphicsQuality > 4} 
             camera={{ position: [0, 5, 10], fov: 60 }}
-            dpr={[0.4, dpr]} // Clamp max dpr based on quality
-            gl={{ preserveDrawingBuffer: true }} // Required for toDataURL
+            dpr={[0.4, dpr]} 
+            gl={{ preserveDrawingBuffer: true }} 
         >
           <ScreenshotManager />
           <Suspense fallback={null}>
-            {gameMode === 'OBBY' && (
-                <>
-                    <Sky sunPosition={[100, 20, 100]} />
-                    <Stars radius={100} depth={50} count={graphicsQuality * 500} factor={4} saturation={0} fade speed={1} />
-                    <ambientLight intensity={0.5} />
-                    <pointLight position={[10, 10, 10]} intensity={1} castShadow={graphicsQuality > 4} />
-                </>
-            )}
+            {gameMode === 'OBBY' && <DayNightCycle />}
+            {gameMode === 'RACING' && <DayNightCycle />}
             
             {gameMode === 'RIVALS' && (
                 <>
@@ -83,17 +116,23 @@ export const GameScene: React.FC = () => {
                     <ambientLight intensity={0.3} />
                 </>
             )}
+
+            {gameMode === 'BACKROOMS' && (
+                <color attach="background" args={['#422006']} />
+            )}
             
             <Physics gravity={[0, -30, 0]}>
-              {gameMode === 'OBBY' ? <Level /> : <RivalsLevel />}
+              {gameMode === 'OBBY' && <Level />}
+              {gameMode === 'RIVALS' && <RivalsLevel />}
+              {gameMode === 'RACING' && <RacingLevel />}
+              {gameMode === 'BACKROOMS' && <BackroomsLevel />}
+              
+              <WorldObjects />
               <Player />
             </Physics>
 
-            {/* Render Remote Players */}
             {playerIds.map((id) => {
                if (id === localId) return null;
-               // We pass initial data. Subsequent updates happen via transient updates in RemotePlayer.
-               // We need to access state.players[id] safely, though it should exist if id is in playerIds
                const p = useGameStore.getState().players[id]; 
                if (!p) return null;
                return <RemotePlayer key={id} id={id} initialData={p} />;

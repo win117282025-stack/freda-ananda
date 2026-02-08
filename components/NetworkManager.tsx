@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import Peer, { DataConnection } from 'peerjs';
 import { useGameStore } from '../store/gameStore';
-import { PlayerState, NetworkMessage, GamePhase } from '../types';
+import { PlayerState, NetworkMessage, GamePhase, WorldObject } from '../types';
 import { PLAYER_COLORS } from '../constants';
 
 export const NetworkManager: React.FC = () => {
@@ -11,6 +11,8 @@ export const NetworkManager: React.FC = () => {
   const username = useGameStore(state => state.username);
   const role = useGameStore(state => state.role);
   const isHost = useGameStore(state => state.isHost);
+  const health = useGameStore(state => state.health);
+  const drivingVehicleId = useGameStore(state => state.drivingVehicleId);
   
   // Actions are stable
   const addPlayer = useGameStore(state => state.addPlayer);
@@ -19,9 +21,8 @@ export const NetworkManager: React.FC = () => {
   const clearMessageQueue = useGameStore(state => state.clearMessageQueue);
   const setPhase = useGameStore(state => state.setPhase);
   const registerKill = useGameStore(state => state.registerKill);
-
-  // We need to access outgoingMessages in the interval, but we can use getState() there.
-  // We don't need to subscribe to it here.
+  const placeObject = useGameStore(state => state.placeObject);
+  const removeObject = useGameStore(state => state.removeObject);
 
   const peerRef = useRef<Peer | null>(null);
   const connectionsRef = useRef<DataConnection[]>([]);
@@ -36,7 +37,8 @@ export const NetworkManager: React.FC = () => {
     color: PLAYER_COLORS[Math.floor(Math.random() * PLAYER_COLORS.length)],
     isLocal: true,
     kills: 0,
-    deaths: 0
+    deaths: 0,
+    health: 100
   });
 
   // Sync ref with store updates for Username/Role changes
@@ -118,7 +120,7 @@ export const NetworkManager: React.FC = () => {
           senderId: localId
         });
 
-        // If I am Host, sync existing players to the new client
+        // If I am Host, sync existing players and objects to the new client
         if (isHost) {
             const currentPlayers = useGameStore.getState().players;
             (Object.values(currentPlayers) as PlayerState[]).forEach(p => {
@@ -129,6 +131,16 @@ export const NetworkManager: React.FC = () => {
                         senderId: p.id
                     });
                 }
+            });
+
+            // Sync Objects
+            const objects = useGameStore.getState().worldObjects;
+            objects.forEach(obj => {
+                conn.send({
+                    type: 'PLACE_OBJECT',
+                    payload: obj,
+                    senderId: 'HOST'
+                });
             });
         }
     });
@@ -153,7 +165,18 @@ export const NetworkManager: React.FC = () => {
       if (msg.type === 'UPDATE') {
         const p = msg.payload as PlayerState;
         if (p.id !== localId) {
-          updatePlayer(p.id, p.position, p.rotation, p.isAttacking);
+          // Sync health and vehicle state too
+          updatePlayer(
+              p.id, 
+              p.position, 
+              p.rotation, 
+              p.isAttacking, 
+              p.isJumping, 
+              p.emote, 
+              p.isThrowing, 
+              p.health,
+              p.drivingVehicleId
+          );
         }
       } 
       else if (msg.type === 'JOIN' || msg.type === 'SPAWN') { // SPAWN treated similarly to JOIN
@@ -185,6 +208,16 @@ export const NetworkManager: React.FC = () => {
         if (msg.payload.targetId === localId) {
            handleDeath(msg.senderId);
         }
+      }
+      else if (msg.type === 'PLACE_OBJECT') {
+          // Check if object exists first
+          const exists = useGameStore.getState().worldObjects.find(o => o.id === msg.payload.id);
+          if (!exists) {
+             placeObject(msg.payload as WorldObject);
+          }
+      }
+      else if (msg.type === 'REMOVE_OBJECT') {
+          removeObject(msg.payload.id);
       }
 
       // 2. RELAY Logic (Only Host Relays)
@@ -224,7 +257,7 @@ export const NetworkManager: React.FC = () => {
       
       // Update ref for new connections to use
       if (currentPlayerState) {
-          localPlayerRef.current = { ...currentPlayerState, isLocal: true };
+          localPlayerRef.current = { ...currentPlayerState, isLocal: true, health: state.health };
           
           const payload: NetworkMessage = {
             type: 'UPDATE',
@@ -232,7 +265,12 @@ export const NetworkManager: React.FC = () => {
               id: localId,
               position: currentPlayerState.position,
               rotation: currentPlayerState.rotation,
-              isAttacking: state.isAttacking
+              isAttacking: state.isAttacking,
+              isJumping: state.isJumping,
+              emote: state.emote,
+              isThrowing: state.isThrowing,
+              health: state.health,
+              drivingVehicleId: state.drivingVehicleId
             },
             senderId: localId
           };

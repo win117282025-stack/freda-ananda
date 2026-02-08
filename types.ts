@@ -6,7 +6,7 @@ export enum GamePhase {
 }
 
 export type Role = 'GUEST' | 'ADMIN' | 'OWNER';
-export type GameMode = 'OBBY' | 'RIVALS';
+export type GameMode = 'OBBY' | 'RIVALS' | 'RACING' | 'BACKROOMS';
 
 export interface PlayerState {
   id: string;
@@ -18,20 +18,32 @@ export interface PlayerState {
   isLocal: boolean;
   heldItem?: ItemType;
   isAttacking?: boolean;
-  isThrowing?: boolean; // New: Throw animation state
-  isJumping?: boolean;  // New: Jump animation state
-  emote?: string;       // New: Current dance/emote
+  isThrowing?: boolean;
+  isJumping?: boolean;
+  emote?: string;
   health?: number; // 0-100
   maxHealth?: number;
-  kills: number;   // NEW: Leaderboard stat
-  deaths: number;  // NEW: Leaderboard stat
-  isDummy?: boolean; // NEW: Flag for dummy entities
+  kills: number;
+  deaths: number;
+  isDummy?: boolean;
+  drivingVehicleId?: string; // ID of the vehicle being driven
 }
 
 export type ItemType = 'NONE' | 'GUN' | 'SWORD' | 'BUILD' | 'UKULELE' | 'FISHING_ROD' | 'WEAKEST_DUMMY';
 
+export type WorldObjectType = 'BLOCK' | 'SPHERE' | 'HOUSE' | 'CAR';
+
+export interface WorldObject {
+  id: string;
+  type: WorldObjectType;
+  position: [number, number, number];
+  rotation: [number, number, number];
+  color?: string;
+  ownerId?: string;
+}
+
 export interface NetworkMessage {
-  type: 'JOIN' | 'UPDATE' | 'CHAT' | 'KICK' | 'KILL' | 'GAME_MODE' | 'SPAWN';
+  type: 'JOIN' | 'UPDATE' | 'CHAT' | 'KICK' | 'KILL' | 'GAME_MODE' | 'SPAWN' | 'PLACE_OBJECT' | 'REMOVE_OBJECT';
   payload: any;
   senderId: string;
 }
@@ -89,15 +101,12 @@ interface R3FElements {
   [elemName: string]: any;
 }
 
-// Shim to fix JSX IntrinsicElements errors for React Three Fiber
-// Augment Global JSX
 declare global {
   namespace JSX {
     interface IntrinsicElements extends R3FElements {}
   }
 }
 
-// Augment React Module JSX (fallback for different TS/React configurations)
 declare module 'react' {
   namespace JSX {
     interface IntrinsicElements extends R3FElements {}

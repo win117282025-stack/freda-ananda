@@ -23,6 +23,7 @@ export const RemotePlayer: React.FC<Props> = ({ id, initialData }) => {
     const playerData = useGameStore.getState().players[id];
     
     if (groupRef.current && playerData) {
+      // If player is driving, they might be handled differently, but generally sync position same way
       const targetPos = new THREE.Vector3(...playerData.position);
       
       const dist = targetPos.distanceTo(prevPos.current);
@@ -46,8 +47,19 @@ export const RemotePlayer: React.FC<Props> = ({ id, initialData }) => {
       groupRef.current.rotation.y += diff * 0.2;
 
       prevPos.current.copy(groupRef.current.position);
+      
+      // Hide visual if driving
+      if (playerData.drivingVehicleId) {
+          groupRef.current.visible = false;
+      } else {
+          groupRef.current.visible = true;
+      }
     }
   });
+
+  // Get health for bar
+  const hp = useGameStore(state => state.players[id]?.health ?? 100);
+  const maxHp = useGameStore(state => state.players[id]?.maxHealth ?? 100);
 
   return (
     <group ref={groupRef} position={initialData.position}>
@@ -57,18 +69,32 @@ export const RemotePlayer: React.FC<Props> = ({ id, initialData }) => {
         isMoving={isMoving}
         isRunning={isMoving}
         isAttacking={useGameStore.getState().players[id]?.isAttacking}
+        emote={useGameStore.getState().players[id]?.emote}
       />
 
-      {/* Username Tag Billboard */}
+      {/* Info Tag Billboard */}
       <Billboard
-         position={[0, 2.8, 0]}
+         position={[0, 3.2, 0]}
          follow={true}
          lockX={false}
          lockY={false}
          lockZ={false}
       >
+        {/* HEALTH BAR */}
+        <group position={[0, 0.4, 0]}>
+            <mesh position={[0, 0, -0.01]}>
+                 <planeGeometry args={[1.54, 0.24]} />
+                 <meshBasicMaterial color="black" />
+            </mesh>
+            <mesh position={[-0.75 + (1.5 * (hp/maxHp) / 2), 0, 0]}>
+                 <planeGeometry args={[1.5 * (hp/maxHp), 0.2]} />
+                 <meshBasicMaterial color={hp > 50 ? "#22c55e" : hp > 20 ? "#eab308" : "#ef4444"} />
+            </mesh>
+        </group>
+
+        {/* NAME TAG */}
         <mesh position={[0, 0, -0.01]}>
-            <planeGeometry args={[initialData.username.length * 0.2 + 0.5, 0.6]} />
+            <planeGeometry args={[initialData.username.length * 0.2 + 0.5, 0.5]} />
             <meshBasicMaterial color="black" transparent opacity={0.4} />
         </mesh>
         
